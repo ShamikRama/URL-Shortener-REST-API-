@@ -28,14 +28,14 @@ func MustLoad() *Config {
 
 	// проверка на существование файла
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.Fatal("File %s does not exist", configPath)
+		log.Fatalf("File %s does not exist", configPath)
 	}
 
 	var cfg Config
 
 	// читаем конфиг
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-		log.Fatal("cannot read config : %s", err)
+		log.Fatalf("cannot read config : %s", err)
 	}
 
 	return &cfg
