@@ -67,7 +67,7 @@ func (s *Storage) SaveUrl(urlToSave string, alias string) (int64, error) {
 	err = stmt.QueryRow(urlToSave, alias).Scan(&id)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "ErrConstraintCode" {
-			return 0, fmt.Errorf("%s : %w", op, err)
+			return 0, fmt.Errorf("%s : %w", op, storage.ErrUrlExist)
 		}
 		return 0, fmt.Errorf("%s : %w", op, err)
 	}
@@ -86,12 +86,14 @@ func (s *Storage) GetUrl(alias string) (string, error) {
 	var resURL string
 
 	err = stmt.QueryRow(alias).Scan(&resURL)
-	if errors.Is(err, sql.ErrNoRows) {
-		return "", storage.ErrUrlNotFound
-	} else if err != nil {
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", storage.ErrUrlNotFound
+		}
 		return "", fmt.Errorf("%s : %w", op, err)
 	}
 
 	return resURL, nil
-
 }
+
+// func (s *Storage)Delete(alias string) error {}

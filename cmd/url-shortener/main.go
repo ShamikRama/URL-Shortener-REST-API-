@@ -6,6 +6,8 @@ import (
 	"Rest/internal/storage/psql"
 	"log/slog"
 	"os"
+
+	"github.com/go-chi/chi"
 )
 
 const (
@@ -28,9 +30,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	_ = storage
+	router := chi.NewRouter()
 
-	// TODO : router : chi, chi-render
+	// TODO : middleware
 
 	// TODO : run server
 
