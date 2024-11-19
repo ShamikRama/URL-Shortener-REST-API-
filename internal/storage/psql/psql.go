@@ -24,23 +24,29 @@ func New(cfg config.Config) (*Storage, error) {
 	}
 	//defer db.Close()
 
-	stmt, err := db.Prepare(`
+	// Создание таблицы
+	createTableSQL := `
 		CREATE TABLE IF NOT EXISTS urls (
 			id SERIAL PRIMARY KEY,
 			alias TEXT NOT NULL UNIQUE,
 			url TEXT NOT NULL
 		);
-		CREATE INDEX IF NOT EXISTS idx_alias ON urls(alias);
-	`)
+	`
+	_, err = db.Exec(createTableSQL)
 	if err != nil {
 		return nil, fmt.Errorf("%s : %w", op, err)
 	}
 
-	_, err = stmt.Exec()
+	// Создание индекса
+	createIndexSQL := `
+		CREATE INDEX IF NOT EXISTS idx_alias ON urls(alias);
+	`
+	_, err = db.Exec(createIndexSQL)
 	if err != nil {
 		return nil, fmt.Errorf("%s : %w", op, err)
 	}
 
 	return &Storage{
-		db: db}, nil
+		db: db,
+	}, nil
 }
