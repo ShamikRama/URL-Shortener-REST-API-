@@ -3,7 +3,7 @@ package main
 import (
 	"Rest/internal/config"
 	"Rest/internal/lib/logger/sl"
-	"Rest/internal/storage/sqlite"
+	"Rest/internal/storage/psql"
 	"log/slog"
 	"os"
 )
@@ -22,7 +22,7 @@ func main() {
 	log.Info("string")
 	log.Debug("wtf")
 
-	storage, err := sqlite.New(cfg.Storage)
+	storage, err := psql.New(*cfg)
 	if err != nil {
 		log.Error("failed to init storage", sl.Err(err))
 		os.Exit(1)

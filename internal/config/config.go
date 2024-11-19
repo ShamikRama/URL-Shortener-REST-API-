@@ -9,10 +9,10 @@ import (
 )
 
 type Config struct {
-	Env         string `yaml:"env" env-default:"local"`
-	Storage     string `yaml:"storage_path" env-required:"true"`
-	HTTPServer  `yaml:"http_server"`
-	DatabaseSql `yaml:"database"`
+	Env        string `yaml:"env" env-default:"local"`
+	Storage    string `yaml:"storage_path" env-required:"true"`
+	HTTPServer `yaml:"http_server"`
+	Database   `yaml:"database"`
 }
 
 type HTTPServer struct {
@@ -21,7 +21,7 @@ type HTTPServer struct {
 	Idle_timeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
 }
 
-type DatabaseSql struct {
+type Database struct {
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
 	Host     string `yaml:"host"`
