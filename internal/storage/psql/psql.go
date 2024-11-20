@@ -78,7 +78,7 @@ func (s *Storage) SaveUrl(urlToSave string, alias string) (int64, error) {
 func (s *Storage) GetUrl(alias string) (string, error) {
 	const op = "storage.psql.GetURL"
 
-	stmt, err := s.db.Prepare("SELECT url FROM urls WHERE alias = ? )")
+	stmt, err := s.db.Prepare("SELECT url FROM urls WHERE alias = $1 )")
 	if err != nil {
 		return "", fmt.Errorf("%s : %w", op, err)
 	}
@@ -96,4 +96,17 @@ func (s *Storage) GetUrl(alias string) (string, error) {
 	return resURL, nil
 }
 
-// func (s *Storage)Delete(alias string) error {}
+func (s *Storage) DeleteUrl(alias string) error {
+	const op = "storage.psql.DeleteURL"
+	stmt, err := s.db.Prepare("DELETE FROM urls WHERE alias = $1")
+	if err != nil {
+		return fmt.Errorf("%s : %w", op, err)
+	}
+
+	_, err = stmt.Exec(alias)
+	if err != nil {
+		return fmt.Errorf("%s : %w", op, err)
+	}
+
+	return nil
+}
