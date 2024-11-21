@@ -4,6 +4,7 @@ import (
 	"Rest/internal/config"
 	"Rest/internal/lib/logger/sl"
 	"Rest/internal/storage/psql"
+	"github.com/go-chi/chi/middleware"
 	"log/slog"
 	"os"
 
@@ -32,6 +33,7 @@ func main() {
 
 	router := chi.NewRouter()
 
+	router.Use(middleware.RequestID)
 	// TODO : middleware
 
 	// TODO : run server
