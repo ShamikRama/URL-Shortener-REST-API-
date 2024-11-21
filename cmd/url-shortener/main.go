@@ -5,6 +5,7 @@ import (
 	"Rest/internal/lib/logger/sl"
 	"Rest/internal/storage/psql"
 	"log/slog"
+	"net/http"
 	"os"
 
 	"github.com/go-chi/chi/middleware"
@@ -35,6 +36,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	_ = storage
+
 	router := chi.NewRouter()
 
 	router.Use(middleware.RequestID)
@@ -43,16 +46,30 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
+	srv := http.Server{
+		Addr:         cfg.Address,
+		Handler:      router,
+		ReadTimeout:  cfg.HTTPServer.Timeout,
+		WriteTimeout: cfg.HTTPServer.Timeout,
+		IdleTimeout:  cfg.HTTPServer.Idle_timeout,
+	}
+
+	if err := srv.ListenAndServe(); err != nil {
+		log.Error("failde to start the server")
+	}
+
+	log.Error("server stopped")
+
 	// TODO : run server
 
 }
 
 func setupLogger(env string) *slog.Logger {
 	var log *slog.Logger
+
 	switch env {
 	case envLocal:
-		log = setupPrettySlogNew()
-			slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+		log = setupPrettySlog()
 	case envDev:
 		log = slog.New(
 			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
@@ -61,7 +78,12 @@ func setupLogger(env string) *slog.Logger {
 		log = slog.New(
 			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
 		)
+	default: // If env config is invalid, set prod settings by default due to security
+		log = slog.New(
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
+		)
 	}
+
 	return log
 }
 
