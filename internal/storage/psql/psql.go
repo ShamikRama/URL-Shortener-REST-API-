@@ -58,7 +58,7 @@ func New(cfg config.Config) (*Storage, error) {
 func (s *Storage) SaveUrl(urlToSave string, alias string) (int64, error) {
 	const op = "storage.psql.SaveURL"
 
-	stmt, err := s.db.Prepare("INSERT INTO urls(url, alias) VALUES($1, $2)")
+	stmt, err := s.db.Prepare("INSERT INTO urls(url, alias) VALUES($1, $2) RETURNING id")
 	if err != nil {
 		return 0, fmt.Errorf("%s : %w", op, err)
 	}
@@ -78,7 +78,7 @@ func (s *Storage) SaveUrl(urlToSave string, alias string) (int64, error) {
 func (s *Storage) GetUrl(alias string) (string, error) {
 	const op = "storage.psql.GetURL"
 
-	stmt, err := s.db.Prepare("SELECT url FROM urls WHERE alias = $1 )")
+	stmt, err := s.db.Prepare("SELECT url FROM urls WHERE alias = $1")
 	if err != nil {
 		return "", fmt.Errorf("%s : %w", op, err)
 	}
@@ -103,9 +103,19 @@ func (s *Storage) DeleteUrl(alias string) error {
 		return fmt.Errorf("%s : %w", op, err)
 	}
 
-	_, err = stmt.Exec(alias)
+	res, err := stmt.Exec(alias)
 	if err != nil {
 		return fmt.Errorf("%s : %w", op, err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: get rows affected error: %w", op, err)
+	}
+
+	// Если ни одна строка не была затронута, возвращаем ошибку
+	if rowsAffected == 0 {
+		return fmt.Errorf("%s: no rows affected, alias not found", op)
 	}
 
 	return nil

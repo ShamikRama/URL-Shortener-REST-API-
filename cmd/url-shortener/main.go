@@ -12,6 +12,10 @@ import (
 
 	"github.com/go-chi/chi"
 
+	"Rest/internal/http-server/handlers/url/delete"
+	"Rest/internal/http-server/handlers/url/redirect"
+	"Rest/internal/http-server/handlers/url/save"
+
 	mwLogger "Rest/internal/http-server/middleware/logger"
 	"Rest/internal/lib/logger/handlers/slogpretty"
 )
@@ -45,6 +49,19 @@ func main() {
 	router.Use(mwLogger.New(log))
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
+
+	router.Route("/url", func(r chi.Router) {
+		r.Use(middleware.BasicAuth("url-shortener", map[string]string{
+			cfg.HTTPServer.User: cfg.HTTPServer.Password,
+		}))
+		r.Post("/", save.New(log, storage))
+	})
+
+	router.Delete("/{alias}", delete.New(log, storage))
+
+	router.Get("/{alias}", redirect.New(log, storage))
+
+	log.Info("starting srever", slog.String("address %s", cfg.Address))
 
 	srv := http.Server{
 		Addr:         cfg.Address,
